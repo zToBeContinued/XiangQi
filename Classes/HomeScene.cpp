@@ -57,19 +57,22 @@ void HomeScene::initUI(Node* node)
 	auto children = node->getChildren();
 	for (auto &child : children)
 	{
+		//一下节点会自己缩放
 		if (child->getName() == "background" || child->getName() == "bg_title" || child->getName() == "layout_1" || child->getName() == "layout_2" || child->getName() == "layout_3" || child->getName() == "layout_4")
 			;
 		else
+			//象棋精灵和text要手动缩放
 			child->setScale(child->getScale()*ScaleFactor);
 	}
 }
 bool HomeScene::isChessStop()
 {
 	//第一次点击的时候是空值，没动
-	if (this->_chess_left == nullptr&& this->_chess_right == nullptr)
+	if (this->getChessLeft() == nullptr&& this->getChessRight() == nullptr)
 		return true;
 	//如果圆心距离大于等于圆的直径就是碰撞停止了
-	if (this->_chess_left->getContentSize().width * this->_chess_left->getScale() >= abs(this->_chess_left->getPositionX() - this->_chess_right->getPositionX()))
+	//精灵缩小了，但是ContentSize()没有，直接getContentSize().width是不对的，还要乘以精灵缩放因子
+	if (this->getChessLeft()->getContentSize().width * this->getChessLeft()->getScale() >= abs(this->getChessLeft()->getPositionX() - this->getChessRight()->getPositionX()))
 		return true;
 	return false;
 }
@@ -91,12 +94,12 @@ void HomeScene::menuCallback(Ref* pSender, Widget::TouchEventType type)
 		auto chess_right = (Sprite*)parent->getChildByName(name_chess_right->getCString());
 		if (isChessStop())
 		{
-			this->_layoutTag = tag;
-			this->_chess_left = chess_left;
-			this->_chess_right = chess_right;
+			this->setLayoutTag(tag);
+			this->setChessLeft(chess_left);
+			this->setChessRight(chess_right);
 
 			auto toCenter = MoveTo::create(1, text_node->getPosition());   //创建移动到X轴中间的动作
-			auto clockwiseSense = RotateBy::create(1, 720);   //顺时针方向旋转动作
+			auto clockwiseSense = RotateBy::create(0.7, 500);   //顺时针方向旋转动作
 			auto counterClockwise = clockwiseSense->reverse();   //逆时针方向旋转动作
 			auto leftToright = Spawn::create(toCenter, clockwiseSense, NULL);
 			auto rightToleft = Spawn::create(toCenter->clone(), counterClockwise, NULL);
@@ -112,18 +115,18 @@ void HomeScene::update(float dt)
 {
 	if (isChessStop())
 	{
-		this->_chess_left->stopAllActions();
-		this->_chess_right->stopAllActions();
-		if (this->_layoutTag == 4)
+		this->getChessLeft()->stopAllActions();
+		this->getChessRight()->stopAllActions();
+		if (this->getLayoutTag() == 4)   //退出游戏
 		{
 			this->unscheduleUpdate();
 			this->ExitGame();
 		}
-		else if (this->_layoutTag == 1)
+		else if (this->getLayoutTag() == 1)   //开始游戏
 		{
 			this->unscheduleUpdate();
 			auto scene = GameMainScene::createScene();
-			Director::getInstance()->replaceScene(TransitionSplitCols::create(0.5,scene));
+			Director::getInstance()->replaceScene(TransitionTurnOffTiles::create(0.5,scene));
 		}
 	}
 }

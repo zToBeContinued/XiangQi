@@ -8,10 +8,9 @@ using namespace ui;
 
 class HomeScene :public Layer
 {
-private:
-	int _layoutTag;
-	Sprite* _chess_left;
-	Sprite* _chess_right;
+	CC_SYNTHESIZE(int, layoutTag, LayoutTag);
+	CC_SYNTHESIZE(Sprite*, chessleft, ChessLeft);
+	CC_SYNTHESIZE(Sprite*, chessright, ChessRight);
 public:
 	static cocos2d::Scene* createScene();
 
